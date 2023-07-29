@@ -27,10 +27,29 @@
         </transition>
       </div>
 
+
+
+      <carousel-3d v-if="isVisible && isMobile" :width="180" :height="290" style="margin-top:30px" ref="carousel">
+
+        <slide class="carousel-slide" v-for="(card, i) in mainDeck" :index="i" :key="card.name">
+          <figure class="carousel-figure" @click="moveCardToSelected(card)">
+              <div class="carousel-card" >
+                <img src="@/assets/Back5.png" alt="back-of-card">
+              </div>
+          </figure>
+        </slide>
+
+      </carousel-3d>
+
+      <!-- <div class="sliding-bar" v-if="isVisibleCarousel">
+        <div class="slider" :style="{ width: `${(selectedCardsCount / mainDeckLength) * 100}%` }"></div>
+      </div> -->
+
     </div>
 </template>
 
 <script>
+import { Carousel3d, Slide } from "vue-carousel-3d";
 import { mapGetters, mapActions, mapState } from 'vuex';
 
 export default {
@@ -49,7 +68,43 @@ export default {
       return {
         isContracted: false,
         loading: false,
+        touchStartX: 0,
+        touchMoveX: 0,
+        isSliding: false,
+        slideThreshold: 50,
+        isMobile: false,
       };
+    },
+    components: {
+      Carousel3d,
+      Slide,
+    },
+    updated() {
+      try {
+        const carouselElement = this.$refs.carousel?.$el;
+        if (carouselElement) {
+          carouselElement.removeEventListener('touchstart', this.onTouchStart);
+          carouselElement.removeEventListener('touchmove', this.onTouchMove);
+          carouselElement.removeEventListener('touchend', this.onTouchEnd);
+
+          carouselElement.addEventListener('touchstart', this.onTouchStart);
+          carouselElement.addEventListener('touchmove', this.onTouchMove);
+          carouselElement.addEventListener('touchend', this.onTouchEnd);
+        }
+      } catch (error) {
+        console.error('Error in handling carousel events:', error);
+      }
+    },
+    mounted() {
+      this.isMobile = window.innerWidth < 720;
+      window.addEventListener("resize", this.onWindowResize);
+    },
+    beforeUnmount() {
+      window.removeEventListener("resize", this.onWindowResize);
+      const carouselElement = this.$refs.carousel.$el;
+      carouselElement.removeEventListener('touchstart', this.onTouchStart);
+      carouselElement.removeEventListener('touchmove', this.onTouchMove);
+      carouselElement.removeEventListener('touchend', this.onTouchEnd);
     },
     computed: {
         ...mapGetters(['allTarotCards', 'selectedCards']),
@@ -62,6 +117,9 @@ export default {
         },
         selectedCardsCount() {
           return this.$store.state.selectedCardsCount;
+        },
+        isVisibleCarousel() {
+          return this.windowWidth < 720;
         },
     },
     created() {
@@ -88,6 +146,30 @@ export default {
           this.incrementProgressBar();
           this.$store.commit('hideTarotCards');
         }
+      },
+      onTouchStart(event) {
+        this.touchStartX = event.touches[0].clientX;
+        this.isSliding = true;
+      },
+      onTouchMove(event) {
+        if (this.isSliding) {
+          this.touchMoveX = event.touches[0].clientX;
+          const diff = this.touchMoveX - this.touchStartX;
+          if (Math.abs(diff) > this.slideThreshold) {
+            this.isSliding = false;
+            if (diff > 0) {
+              this.$refs.carousel.prev();
+            } else {
+              this.$refs.carousel.next();
+            }
+          }
+        }
+      },
+      onTouchEnd() {
+        this.isSliding = false;
+      },
+      onWindowResize() {
+        this.isMobile = window.innerWidth < 720;
       },
     },
 };
@@ -221,10 +303,64 @@ a {
   }
 }
 
-@media (max-width: 600px) {
-  .card {
-    margin: 20px 5px;
+@media (min-width: 720px) {
+  .carousel-3d {
+    display: none !important;
   }
+
+  .sliding-bar {
+    display: none;
+  }
+}
+
+@media (max-width: 720px) {
+    .card-list-wrapper {
+      display: none;
+    }
+
+    .carousel-3d {
+      display: flex !important;
+    }
+
+    .carousel-3d-container figure {
+      margin: 0;
+    }
+
+    .carousel-slide {
+      border-radius: 10% !important;
+      width: auto;
+    }
+
+    .carousel-card {
+      width: 100%;
+      height: 100%;
+      padding: 0;
+      display: flex;
+      justify-content: center;
+      align-items: center;   
+    }
+
+    .carousel-card img {
+      background-color: #2c2460;
+      object-fit: cover;
+      width: 100%;
+      height: 100%;
+    }
+
+    .sliding-bar {
+      width: 100%;
+      height: 5px;
+      background-color: #4f4e5e;
+      position: relative;
+      margin-top: 10px;
+    }
+
+    .slider {
+      height: 100%;
+      background-color: #d2cfd2;
+      transition: width 0.3s ease;
+    }
+
 }
 
 </style>

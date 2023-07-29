@@ -18,6 +18,10 @@ export default {
 
 <style scoped>
 
+.nav {
+  background-color: #2c2460;
+}
+
 #mainLogo {
   width: 200px;
   margin: 1%;

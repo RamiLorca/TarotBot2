@@ -1,9 +1,11 @@
 <template>
+
   <div id="app" class="main-container">
     <PageHeader class="header" />
     <router-view class="router-view" />
     <PageFooter />
   </div>
+
 </template>
 
 <script>
@@ -27,6 +29,12 @@ export default {
 </script>
 
 <style>
+
+html {
+  background-color: #161623;
+  overscroll-behavior: contain;
+}
+
 #app {
   font-family: Avenir, Helvetica, Arial, sans-serif;
   -webkit-font-smoothing: antialiased;
@@ -34,16 +42,11 @@ export default {
   text-align: center;
   color: #2c3e50;
   margin-top: 100px;
-  background-color: #161623;
-  height: 100%;
+  min-height: 100%;
   width: 100%;
-}
-
-.main-container {
   display: flex;
   flex-direction: column;
   justify-content: space-between;
-  min-height: 100vh;
 }
 
 .router-view {

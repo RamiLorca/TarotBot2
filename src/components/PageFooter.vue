@@ -44,6 +44,10 @@
   </script>
   
   <style scoped>
+
+  .v-footer {
+    background-color: #2c2460;
+  }
   
   .centered-content{
       display: flex;
